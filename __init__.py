@@ -4,7 +4,7 @@ import stat
 
 from ranger.api import register_linemode
 from ranger.core.linemode import LinemodeBase
-
+from ranger.ext.human_readable import human_readable, human_readable_time
 from .icons import file_node_extensions, file_node_exact_matches, file_node_pattern_matches
 
 
@@ -28,7 +28,7 @@ def get_symbol(file):
         if not file.exists:
             return '!'
         if file.stat and stat.S_ISDIR(file.stat.st_mode):
-            return '~'
+            return ''
         return '@'
 
     if file.is_socket:
@@ -54,7 +54,7 @@ def get_symbol(file):
 
 @register_linemode
 class DevIcons2Linemode(LinemodeBase):
-    name = 'devicons2'
+    name = 'human_devicons'
     uses_metadata = False
 
     def filetitle(self, file, metadata):
@@ -63,3 +63,9 @@ class DevIcons2Linemode(LinemodeBase):
             file.relative_path,
             get_symbol(file),
         )
+
+    def infostring(self, file, metadata):
+        if file.stat is None:
+            return '?'
+        size = human_readable(file.size)
+        return "%s %11s" % (size, human_readable_time(file.stat.st_mtime))
